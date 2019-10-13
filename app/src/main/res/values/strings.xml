@@ -1,3 +1,26 @@
 <resources>
-    <string name="app_name">News_App</string>
+    <string name="app_name">News_app</string>
+    <string name="placeholder">Placeholder</string>
+    <string name="noInternet">No internet available</string>
+    <string name="settings_menu_item">Settings</string>
+    <string name="emptyText">No results to be shown</string>
+
+    <string name="setting_category_label">Category</string>
+    <string name="setting_category_default">android</string>
+    <string name="setting_category_key">q</string>
+
+    <string name="setting_orderby_time_newest_label">Newest</string>
+    <string name="setting_orderby_time_value">newest</string>
+
+    <string name="setting_orderby_time_oldest_label">Oldest</string>
+    <string name="setting_orderby_time_oldest_value">oldest</string>
+
+    <string name="setting_orderby_time_relevance_label">Relevance</string>
+    <string name="setting_orderby_time_relevance_value">relevance</string>
+
+    <string name="setting_orderby_label">Order By</string>
+    <string name="setting_orberby_key">order-by</string>
+    <string name="setting_orderby_default" translatable="false">relevance</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="action_settings">Settings</string>
 </resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:defaultValue="@string/setting_category_default"
+        android:inputType="text"
+        android:key="@string/setting_category_key"
+        android:selectAllOnFocus="true"
+        android:title="@string/setting_category_label"/>
+    <ListPreference
+        android:defaultValue="@string/setting_orderby_time_relevance_value"
+        android:entries="@array/settings_order_by_labels"
+        android:entryValues="@array/settings_order_by_values"
+        android:key="@string/setting_orberby_key"
+        android:title="@string/setting_orderby_label"/>
+</androidx.preference.PreferenceScreen>
