@@ -1,9 +1,12 @@
 package com.shopping.news_app
 
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -21,35 +24,40 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<News>>,
-    SharedPreferences.OnSharedPreferenceChangeListener, SwipeRefreshLayout.OnRefreshListener  {
+    SharedPreferences.OnSharedPreferenceChangeListener, SwipeRefreshLayout.OnRefreshListener {
 
     private val requestUrl = "https://content.guardianapis.com/search?&api-key=test"
     private val loaderId = 1
     private var mAdapter: NewsAdapter? = null
     private var mEmptyStateTextView: TextView? = null
     private var swipeRefreshLayout: SwipeRefreshLayout? = null
-    private var mProgressBar: ProgressBar? = null
+    private var emptySwipeRefreshLayout: SwipeRefreshLayout? = null
+    private var isConnnected = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val cm = applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val active = cm.activeNetworkInfo
         // setting up the swipe refresh layout
-        swipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.swipe)
-        swipeRefreshLayout?.setOnRefreshListener(this)
+        swipeRefreshLayout = findViewById(R.id.swipe)
 
-        // Setting the networkstatus textview
-        val isConnnected = active != null && active.isConnectedOrConnecting
-        mEmptyStateTextView = findViewById<TextView>(R.id.empty_view)
+        emptySwipeRefreshLayout = findViewById(R.id.swipe_Empty)
+        emptySwipeRefreshLayout?.setOnRefreshListener(this)
+        emptySwipeRefreshLayout?.isRefreshing = false;
+
+        swipeRefreshLayout?.setOnRefreshListener(this)
+        swipeRefreshLayout?.isRefreshing = false;
+
+        // Setting the network status text view
+        isConnnected = isInternetAvailable()
+        mEmptyStateTextView = findViewById(R.id.empty_view)
+        mEmptyStateTextView?.visibility = View.GONE
         val newsList = findViewById<ListView>(R.id.list)
         newsList.emptyView = mEmptyStateTextView
-        mProgressBar = findViewById<ProgressBar>(R.id.progressBar)
         if (isConnnected) {
             supportLoaderManager.initLoader(loaderId, null, this)
         } else {
-            mProgressBar?.visibility = View.GONE
+            mEmptyStateTextView?.visibility = View.VISIBLE
             mEmptyStateTextView?.text = getString(R.string.noInternet)
         }
 
@@ -62,6 +70,35 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<New
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 startActivity(intent)
             }
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        var result = false
+        val cm =
+            applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            cm?.run {
+                cm.getNetworkCapabilities(cm.activeNetwork)?.run {
+                    result = when {
+                        hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                        hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                        hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                        else -> false
+                    }
+                }
+            }
+        } else {
+            cm?.run {
+                cm.activeNetworkInfo?.run {
+                    if (type == ConnectivityManager.TYPE_WIFI) {
+                        result = true
+                    } else if (type == ConnectivityManager.TYPE_MOBILE) {
+                        result = true
+                    }
+                }
+            }
+        }
+        return result
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -83,15 +120,13 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<New
         if (key == getString(R.string.setting_orberby_key) || key == getString(R.string.setting_category_key)) {
             mAdapter?.clear()
 
-            mEmptyStateTextView?.setVisibility(View.GONE)
-
-            val load = findViewById<ProgressBar>(R.id.progressBar)
-            load?.setVisibility(View.VISIBLE)
+            mEmptyStateTextView?.visibility = View.GONE
             supportLoaderManager.restartLoader(loaderId, null, this)
         }
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<List<News>> {
+        isConnnected = isInternetAvailable()
         val shared = PreferenceManager.getDefaultSharedPreferences(this)
         val category = shared.getString(
             getString(R.string.setting_category_key),
@@ -111,10 +146,14 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<New
     }
 
 
-
     override fun onLoadFinished(loader: Loader<List<News>>, data: List<News>?) {
-        mProgressBar?.visibility = View.GONE
-        mEmptyStateTextView?.setText(R.string.emptyText)
+        mEmptyStateTextView?.visibility = View.VISIBLE
+        if (isConnnected) {
+            mEmptyStateTextView?.setText(R.string.emptyText)
+        } else {
+            mEmptyStateTextView?.text = getString(R.string.noInternet)
+        }
+
         if (data != null && data.isNotEmpty()) {
             mAdapter?.addAll(data)
         }
@@ -128,5 +167,6 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<New
         mAdapter?.clear()
         supportLoaderManager?.restartLoader(loaderId, null, this)
         swipeRefreshLayout?.isRefreshing = false
+        emptySwipeRefreshLayout?.isRefreshing = false
     }
 }

@@ -4,10 +4,7 @@ import android.text.TextUtils
 import android.util.Log
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
+import java.io.*
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
@@ -18,7 +15,7 @@ class Query {
     companion object {
         private val LOG_TAG = Query::class.java.simpleName
 
-        fun createUrl(stringUrl: String): URL? {
+        private fun createUrl(stringUrl: String): URL? {
             var url: URL? = null
             try {
                 url = URL(stringUrl)
@@ -29,7 +26,7 @@ class Query {
             return url
         }
 
-        //Gathering up the infromations needed for the query
+        //Gathering up the informations needed for the query
         fun fetchNewsData(requestUrl: String): ArrayList<News>? {
             val url = createUrl(requestUrl)
             var response: String? = null
@@ -44,7 +41,7 @@ class Query {
 
         //Requesting for a response
         @Throws(IOException::class)
-        public fun makeHttpRequest(url: URL?): String {
+        fun makeHttpRequest(url: URL?): String {
             var response = ""
             if (url == null) {
                 return response
@@ -77,7 +74,7 @@ class Query {
             val output = StringBuilder()
             if (inputStream != null) {
                 val inputStreamReader = InputStreamReader(inputStream, Charset.forName("UTF-8"))
-                val reader = BufferedReader(inputStreamReader)
+                val reader = BufferedReader(inputStreamReader as Reader)
                 var line: String? = reader.readLine()
                 while (line != null) {
                     output.append(line)
@@ -93,7 +90,7 @@ class Query {
         private var tag: String = ""
         private var url: String = ""
 
-        fun extractFeatures(json: String?): ArrayList<News>? {
+        private fun extractFeatures(json: String?): ArrayList<News>? {
             val news = ArrayList<News>()
             if (TextUtils.isEmpty(json)) {
                 return null
@@ -106,15 +103,15 @@ class Query {
                 for (i in 0 until items.length()) {
                     val item = items.getJSONObject(i)
 
-                    if (item.has("webTitle")) {
-                        titleName = item.getString("webTitle")
+                    titleName = if (item.has("webTitle")) {
+                        item.getString("webTitle")
                     } else {
-                        titleName = "No title"
+                        "No title"
                     }
-                    if (item.has("sectionName")) {
-                        tag = item.getString("sectionName")
+                    tag = if (item.has("sectionName")) {
+                        item.getString("sectionName")
                     } else {
-                        tag = " "
+                        " "
                     }
                     if (item.has("webPublicationDate")) {
                         publishDate = item.getString("webPublicationDate")
