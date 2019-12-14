@@ -26,7 +26,7 @@ import java.util.ArrayList
 class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<News>>,
     SharedPreferences.OnSharedPreferenceChangeListener, SwipeRefreshLayout.OnRefreshListener {
 
-    private val requestUrl = "https://content.guardianapis.com/search?&api-key=test"
+    private val requestUrl = "https://content.guardianapis.com/search?&api-key=bf78e140-66e1-4871-8c7d-d98afd2d1ac6"
     private val loaderId = 1
     private var mAdapter: NewsAdapter? = null
     private var mEmptyStateTextView: TextView? = null
@@ -54,6 +54,9 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<New
         mEmptyStateTextView?.visibility = View.GONE
         val newsList = findViewById<ListView>(R.id.list)
         newsList.emptyView = mEmptyStateTextView
+
+
+        // If the user has no internet display the message otherwise start loading the news
         if (isConnnected) {
             supportLoaderManager.initLoader(loaderId, null, this)
         } else {
@@ -73,6 +76,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<New
     }
 
     private fun isInternetAvailable(): Boolean {
+        // Android 10 has a refactored network information service, has to check if that is available
         var result = false
         val cm =
             applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
@@ -125,6 +129,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<New
         }
     }
 
+    // Override the default loader creating event to create out own async task loader
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<List<News>> {
         isConnnected = isInternetAvailable()
         val shared = PreferenceManager.getDefaultSharedPreferences(this)
@@ -146,6 +151,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<New
     }
 
 
+    //Override the loader callback to refresh the screen
     override fun onLoadFinished(loader: Loader<List<News>>, data: List<News>?) {
         mEmptyStateTextView?.visibility = View.VISIBLE
         if (isConnnected) {

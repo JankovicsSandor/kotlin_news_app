@@ -9,7 +9,11 @@ import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
 import java.nio.charset.Charset
-import java.util.ArrayList
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class Query {
     companion object {
@@ -114,7 +118,10 @@ class Query {
                         " "
                     }
                     if (item.has("webPublicationDate")) {
-                        publishDate = item.getString("webPublicationDate")
+                        var date = ZonedDateTime.parse(item.getString("webPublicationDate"));
+
+
+                        publishDate = date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"))
                     } else {
                         publishDate = ""
                     }

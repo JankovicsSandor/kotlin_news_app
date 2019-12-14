@@ -17,6 +17,8 @@
     <TextView
         android:id="@+id/yearId"
         style="@style/authorText"
-        android:textSize="12sp"
-        android:text="@string/placeholder"/>
+        android:layout_height="wrap_content"
+        android:text="@string/placeholder"
+        android:textAlignment="textEnd"
+        android:textSize="12sp" />
 </LinearLayout>
